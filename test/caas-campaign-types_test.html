@@ -4,36 +4,36 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
-    <title>caas-campaign-types test</title>
+    <title>caas-campaigns test</title>
 
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
 
-    <link rel="import" href="../caas-campaign-types.html">
+    <link rel="import" href="../caas-campaigns.html">
   </head>
   <body>
 
     <test-fixture id="BasicTestFixture">
       <template>
-        <caas-campaign-types></caas-campaign-types>
+        <caas-campaigns></caas-campaigns>
       </template>
     </test-fixture>
 
     <test-fixture id="ChangedPropertyTestFixture">
       <template>
-        <caas-campaign-types prop1="new-prop1"></caas-campaign-types>
+        <caas-campaigns access-token="blablalba"></caas-campaigns>
       </template>
     </test-fixture>
 
     <script>
-      suite('caas-campaign-types', function() {
+      suite('caas-campaigns', function() {
 
         test('instantiating the element with default properties works', function() {
           var element = fixture('BasicTestFixture');
-          assert.equal(element.prop1, 'caas-campaign-types');
+          assert.equal(element.prop1, 'caas-campaigns');
           var elementShadowRoot = element.shadowRoot;
           var elementHeader = elementShadowRoot.querySelector('h2');
-          assert.equal(elementHeader.innerHTML, 'Hello caas-campaign-types!');
+          assert.equal(elementHeader.innerHTML, 'Hello caas-campaigns!');
         });
 
         test('setting a property on the element works', function() {
