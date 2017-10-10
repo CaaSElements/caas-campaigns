@@ -13,15 +13,24 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
 
     <iron-ajax
       id="getItems"
-      url="[[apiEndpoint]]/accountmanager/campaigns"
+      url="[[apiEndpoint]]accountmanager/campaigns"
       method="GET"
       last-response="{{_apiData}}"
-      headers="[[_requestHeaders]]"
+      headers="[[_campaignsRequestHeaders]]"
       auto="[[autoDownload]]"
       on-request="_handleGetItemsRequest"
       on-response="_handleGetItemsResponse"
       on-error="_handleGetItemsError"
       loading="{{loadingCampaigns}}"
+    ></iron-ajax>
+
+    <iron-ajax
+      id="getOptions"
+      url="[[apiEndpoint]]accountmanager/campaignfields"
+      method="GET"
+      headers="[[_campaignFieldsRequestHeaders]]"
+      auto="[[autoDownload]]"
+      last-response="{{campaignFields}}"
     ></iron-ajax>
 <!--
     <iron-ajax
@@ -131,25 +140,24 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
                     notify: true
                 },
 
+                campaignFields: {
+                    type: Array,
+                    notify: true
+                },
+
                 responseStatus: {
                     type: Object,
                     notify: true
                 },
 
-                filterableFields: {
-                    type: Array,
-                    computed: "_getFilterableFieds(campaigns)"
-                },
-
-                sortableFields: {
-                    type: Array,
-                    computed: "_getSortableFieds(campaigns)",
-                    notify: true,
-                },
-
-                _requestHeaders: {
+                _campaignsRequestHeaders: {
                     type: Object,
-                    computed: '_computeRequestHeaders(accessToken, limit, direction, searchQuery, orderBy, page)'
+                    computed: '_computeCampaignsRequestHeaders(accessToken, limit, direction, searchQuery, orderBy, page)'
+                },
+
+                _campaignFieldsRequestHeaders: {
+                    type: Object,
+                    computed: '_computeCampaignFieldsRequestHeaders(accessToken)'
                 },
 
                 _apiData: {
@@ -174,22 +182,6 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
                 var apiData = apiDataChange.base;
                 if (!apiData) return;
                 return apiData.map(this._parseApiDataItemToCampaign)
-            },
-
-            _getFilterableFieds: function(campaigns) {
-                if(!campaigns[0]) return [];
-                return (Object.keys(campaigns[0]));
-            },
-
-            _getSortableFieds: function(campaigns) {
-                if(!campaigns[0]) return [];
-                var fields = Object.keys(campaigns[0]);
-                return fields.map(function(field) {
-                    return {
-                        name: field,
-                        value: field
-                    };
-                });
             },
 
             _campaignsDataChanged: function(changeRecord) {
@@ -261,15 +253,21 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
                 this._setStatusResponseObject('error', this.$.getItems.method.this.$.getItems.route);
             },
 
-            _computeRequestHeaders: function(accessToken, limit, direction, searchQuery, orderBy, page) {
+            _computeCampaignsRequestHeaders: function(accessToken, limit, direction, searchQuery, orderBy, page) {
                 var headers = {};
-                if (limit) headers.can_query_limit = limit;
-                if (direction) headers.can_query_direction = direction;
-                if (searchQuery) headers.can_query_searchQuery = searchQuery;
-                if (orderBy) headers.can_query_orderBy = orderBy;
-                if (page) headers.can_query_page = page;
+                if (limit) headers.CanQueryLimit = limit;
+                if (direction) headers.CanQueryDirection = direction;
+                // if (searchQuery) headers.can_query_searchQuery = searchQuery;
+                if (orderBy) headers.CanQueryOrderBy = orderBy;
+                if (page) headers.CanQueryPage = page;
                 if (accessToken) headers.authorization = "Bearer " + accessToken;
                 return headers;
+            },
+
+            _computeCampaignFieldsRequestHeaders: function(accessToken) {
+                return {
+                    "Authorization": "Bearer " + accessToken
+                }
             },
 
             _getApiValue: function(value) {
@@ -279,13 +277,13 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
             _parseApiDataItemToCampaign: function(item) {
                 return {
                     id: item.id,
+                    status: item.status,
                     projectNaam: item.projectNaam,
                     accountManagerEmail: item.accountManagerEmail,
                     slug: item.slug,
                     progressPercentage: item.slug,
                     timeProgressPercentage: item.timeProgressPercentage,
                     fundingPredictionAtDeadlineDateInPercentage: item.fundingPredictionAtDeadlineDateInPercentage,
-                    status: item.status,
                     progressInEuros: item.progressInEuros,
                     isFunded: item.isFunded,
                     campagneTypeId: item.campagneTypeId,
