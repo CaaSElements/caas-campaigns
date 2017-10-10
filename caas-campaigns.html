@@ -177,6 +177,12 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
                 this.$.getItems.generateRequest();
             },
 
+            /*
+             * Get all fields
+             */
+            getFields: function() {
+                this.$.getFields.generateRequest();
+            },
 
             _computeCampaigns: function(apiDataChange) {
                 var apiData = apiDataChange.base;
@@ -193,48 +199,6 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
                 this.$.updateItem.url = this.apiEndpoint + '/entrepreneurs/' + this.campaignId + '/campaigntypes/' + item.id;
                 this.$.updateItem.body = JSON.stringify(item);
                 this.$.updateItem.generateRequest();
-            },
-
-            _getArrayIndexByCampaignId: function(id) {
-                for (var i = 0; i < this.campaigns.length; i++) {
-                    if (this.campaigns[i].id === id) {
-                        return this.campaigns.indexOf(this.campaigns[i]);
-                    }
-                }
-            },
-
-            _updateCampaignByArrayIndex: function(updatedCampaign, arrayIndex) {
-                var updatedCampaign = this._parseApiDataItemToCampaign(updatedCampaign);
-                if (arrayIndex != -1) {
-                    return this.splice('campaigns', arrayIndex, 1, updatedCampaign);
-                }
-            },
-
-            _handleUpdateItemRequest: function(evt) {
-                this._setStatusResponseObject('loading');
-            },
-
-            _handleUpdateItemResponse: function(evt) {
-                var savedItem = evt.detail.response;
-                var toBeUpdatedArrayIndex = this._getArrayIndexByCampaignId(savedItem.id);
-                this._updateCampaignByArrayIndex(savedItem, toBeUpdatedArrayIndex);
-                this.$.updateItem.url = null;
-                this.fire('campaign-type-updated', {
-                    response: savedItem
-                });
-                this._setStatusResponseObject('success');
-            },
-
-            _handleUpdateItemError: function(evt, data) {
-                this.$.updateItem.url = null;
-                this.fire('campaign-type-update-error', {
-                    message: evt.detail.error.message,
-                    response: evt.detail.response
-                });
-                this._setStatusResponseObject('failed',
-                    this.$.updateItem.method,
-                    this.$.updateItem.route,
-                    'Opslaan mislukt' + ((data.request.xhr.response && data.request.xhr.response.error[0]) ? ': ' + data.request.xhr.response.error[0].message : ''));
             },
 
             _handleGetItemsRequest: function(evt) {
