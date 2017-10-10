@@ -18,32 +18,28 @@
     </custom-style>
   </head>
   <body>
-    <div class="vertical-section-container centered">
+    <div class="vertical-section-container">
       <h3>Basic caas-campaigns demo</h3>
       <demo-snippet>
         <template is="dom-bind">
 
               <caas-campaigns
                 auto-download
-                id="campaigntypes"
-                campaign-types="{{campaignTypes}}"
+                id="campaigns"
+                campaigns="{{campaigns}}"
                 api-endpoint="https://192.168.178.36/api/"
-                campaign-id="892">
+                limit="100"
+                offset="30"
+                direction="ASC"
+                search-query="asd"
+                sort-by="id">
               </caas-campaigns>
 
-              <!-- <template is="dom-repeat" items="{{campaignTypes}}" index-as="index">
+              <template is="dom-repeat" items="{{campaigns}}" index-as="index">
                 <ul>
-                    <li>[[item.campaignId]]</li>
-                    <li>[[item.contractTypeId]]</li>
-                    <li>[[item.contractTypeName]]</li>
-                    <li>[[item.minimumInvestment]]</li>
-                    <li>[[item.maximumInvestment]]</li>
-                    <li>[[item.investmentIncrement]]</li>
-                    <li>[[item.investmentVerb]]</li>
-                    <li>[[item.maximumTotalAmount]]</li>
-                    <li>[[item.progress]]</li>
+                    <li>[[item.id]] - [[item.status]] - [[item.projectNaam]]</li>
                 </ul>
-              </template> -->
+              </template>
 
         </template>
       </demo-snippet>
