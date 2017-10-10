@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
 
@@ -10,39 +11,117 @@
 
     <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
     <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../caas-auth/caas-auth.html">
+    <link rel="import" href="../../app-route/app-location.html">
     <link rel="import" href="../caas-campaigns.html">
-
     <custom-style>
-      <style is="custom-style" include="demo-pages-shared-styles">
-      </style>
+        <style is="custom-style" include="demo-pages-shared-styles">
+        </style>
     </custom-style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="vertical-section-container">
-      <h3>Basic caas-campaigns demo</h3>
-      <demo-snippet>
-        <template is="dom-bind">
+        <h3>Basic caas-campaigns demo</h3>
+        <demo-snippet>
+            <template is="dom-bind"
+                        id="demo"
+                        signed-in="[[signedIn]]">
 
-              <caas-campaigns
-                auto-download
-                id="campaigns"
-                campaigns="{{campaigns}}"
-                api-endpoint="https://192.168.178.36/api/"
-                limit="100"
-                offset="30"
-                direction="ASC"
-                search-query="asd"
-                sort-by="id">
-              </caas-campaigns>
+                <caas-auth
+                  id="auth"
+                  api-endpoint="https://192.168.178.36/api/"
+                  signed-in="{{signedIn}}"
+                  access-token="{{accessToken}}"
+                  user-role="{{userRole}}"
+                  user-id="{{userId}}"
+                ></caas-auth>
 
-              <template is="dom-repeat" items="{{campaigns}}" index-as="index">
-                <ul>
-                    <li>[[item.id]] - [[item.status]] - [[item.projectNaam]]</li>
-                </ul>
-              </template>
+                <app-location
+                  query-params="{{queryParams}}"
+                ></app-location>
 
-        </template>
-      </demo-snippet>
+                <caas-campaigns
+                  auto-download="[[signedIn]]"
+                  id="campaigns"
+                  campaigns="{{campaigns}}"
+                  api-endpoint="https://192.168.178.36/api/"
+                  limit="100"
+                  page="{{page}}"
+                  direction="{{direction}}"
+                  search-query="{{searchQuery}}"
+                  order-by="{{orderBy}}"
+                  sortable-fields="{{sortableFields}}"
+                  loading-campaigns="{{loadingCampaigns}}"
+                  access-token="[[accessToken]]">
+                </caas-campaigns>
+
+                <template is="dom-if" if="[[!signedIn]]">
+                  <h2>Sign in</h2>
+                  <form on-submit="signIn">
+                    <label for="username">username</label><br>
+                    <input type="text" id="username" value="[[queryParams.username]]"><p>
+                    <label for="password">password</label><br>
+                    <input type="password" id="password" value="[[queryParams.password]]"><p>
+                    <input type="submit" value="Sign In">
+                  </form>
+                </template>
+
+                
+
+                <template is="dom-if" if="[[signedIn]]">
+
+                    <select name="orderBy" value="{{orderBy::change}}">
+                      <template is="dom-repeat" items="[[sortableFields]]" index-as="index">
+                          <option value="[[item.name]]">[[item.name]]</option>
+                      </template>
+                    </select>
+                    <label for="sortby">sorteer</label>
+
+                    <select name="direction" value="{{direction::change}}">
+                        <option value="ASC">Omhoog</option>
+                        <option value="DESC">Omlaag</option>
+                    </select>
+
+                    <br>
+
+                    <input type="number" name="page" value="{{page::change}}">
+                    <label for="page">pagina</label>
+
+                    <input type="text" name="searchQuery" value="{{searchQuery::change}}">
+                    <label for="searchQuery">zoek</label>
+
+
+                    <section hidden="[[loadingCampaigns]]">
+
+                      <template is="dom-repeat" items="{{campaigns}}" index-as="index">
+                        <ul>
+                            <li>[[item.id]] - [[item.status]] - [[item.projectNaam]]</li>
+                        </ul>
+                      </template>
+                    </section>
+
+                </template>
+
+                <script>
+                  var demo = document.querySelector('#demo');
+                  var campaigns = document.querySelector('#campaigns');
+                  demo.signIn = function(evt) {
+                    evt.preventDefault();
+                    auth.signIn(
+                      document.querySelector('#username').value,
+                      document.querySelector('#password').value,
+                      'accountmanager'
+                    );
+                  }
+                  demo.signOut = function(evt) {
+                    evt.preventDefault();
+                    auth.signOut();
+                  }
+                </script>
+            </template>
+        </demo-snippet>
     </div>
-  </body>
+</body>
+
 </html>
