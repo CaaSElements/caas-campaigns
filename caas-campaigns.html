@@ -9,11 +9,11 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
 -->
 
 <dom-module id="caas-campaigns">
-  <template>
+    <template>
 
     <iron-ajax
       id="getItems"
-      url="[[apiEndpoint]]/campaigns"
+      url="[[apiEndpoint]]/accountmanager/campaigns"
       method="GET"
       last-response="{{_apiData}}"
       headers="[[_requestHeaders]]"
@@ -37,264 +37,271 @@ Polymer Campaign types Element for Crowdfunding as a Service Solutions
 
   </template>
 
-  <script>
-    Polymer({
+    <script>
+        Polymer({
 
-      is: 'caas-campaigns',
-      properties: {
+            is: 'caas-campaigns',
+            properties: {
 
-        /**
-        * The server side API endpoint
-        */
-        apiEndpoint: {
-          type: String,
-          value: null
-        },
+                /**
+                 * The server side API endpoint
+                 */
+                apiEndpoint: {
+                    type: String,
+                    value: null
+                },
 
-        /**
-        * Exposes the access token (JSON web token) associated with the current session
-        */
-        accessToken: {
-          type: String,
-          value: null,
-          notify: true
-        },
+                /**
+                 * Exposes the access token (JSON web token) associated with the current session
+                 */
+                accessToken: {
+                    type: String,
+                    value: null,
+                    notify: true
+                },
 
-        /**
-        * True while getting all types
-        */
-        loadingCampaigns: {
-          type: Boolean,
-          value: false,
-          notify: true
-        },
+                /**
+                 * True while getting all types
+                 */
+                loadingCampaigns: {
+                    type: Boolean,
+                    value: false,
+                    notify: true
+                },
 
-        /**
-        * Determines whether the types should be downloaded automatically
-        */
-        autoDownload: {
-          type: Boolean,
-          value: false
-        },
+                /**
+                 * Determines whether the types should be downloaded automatically
+                 */
+                autoDownload: {
+                    type: Boolean,
+                    value: false
+                },
 
-        /**
-        * Maximum number of downloaded prospects
-        */
-        limit: {
-          type: Number,
-          value: 100,
-          notify: true
-        },
+                /**
+                 * Maximum number of downloaded prospects
+                 */
+                limit: {
+                    type: Number,
+                    value: 100,
+                    notify: true
+                },
 
-        /**
-        * Sort direction 'ASC' or 'DESC'
-        */
-        direction: {
-          type: String,
-          value: 'DESC',
-          notify: true
-        },
+                /**
+                 * Sort direction 'ASC' or 'DESC'
+                 */
+                direction: {
+                    type: String,
+                    value: 'ASC',
+                    notify: true
+                },
 
-        /**
-        * Sort prospects by any of the keys
-        */
-        orderBy: {
-            type: String,
-            value: 'id',
-            notify: true
-        },
+                /**
+                 * Sort prospects by any of the keys
+                 */
+                orderBy: {
+                    type: String,
+                    value: 'id',
+                    notify: true
+                },
 
-        /**
-        * Offset for pagination
-        */
-        offset: {
-          type: Number,
-          value: 0,
-          notify: true
-        },
+                /**
+                 * Offset for pagination
+                 */
+                page: {
+                    type: Number,
+                    value: 0,
+                    notify: true
+                },
 
-        /**
-        * Search for projectname or prospect name
-        */
-        searchQuery: {
-          type: String,
-          value: null
-        },
+                /**
+                 * Search for projectname or prospect name
+                 */
+                searchQuery: {
+                    type: String,
+                    value: null
+                },
 
-        /**
-        * List of all available types for this `campaignId`
-        */
-        campaigns: {
-          type: Array,
-          value: [],
-          computed: '_computeCampaigns(_apiData.*)',
-          notify: true
-        },
+                /**
+                 * List of all available types for this `campaignId`
+                 */
+                campaigns: {
+                    type: Array,
+                    value: [],
+                    computed: '_computeCampaigns(_apiData.*)',
+                    notify: true
+                },
 
-        responseStatus: {
-            type: Object,
-            notify: true
-        },
+                responseStatus: {
+                    type: Object,
+                    notify: true
+                },
 
-        filterableFields: {
-            type: Array,
-            compted: "_getFilterableFieds(campaigns.*)"
-        }
+                filterableFields: {
+                    type: Array,
+                    computed: "_getFilterableFieds(campaigns)"
+                },
 
-        _requestHeaders: {
-          type: Object,
-          computed: '_computeRequestHeaders(accessToken, limit, direction, searchQuery, orderBy, offset)'
-        },
+                sortableFields: {
+                    type: Array,
+                    computed: "_getSortableFieds(campaigns)",
+                    notify: true,
+                },
 
-        _apiData: {
-          type: Array
-        }
+                _requestHeaders: {
+                    type: Object,
+                    computed: '_computeRequestHeaders(accessToken, limit, direction, searchQuery, orderBy, page)'
+                },
 
-      },
+                _apiData: {
+                    type: Array
+                }
 
-      observers: [
-        '_campaignsDataChanged(campaigns.*)'
-      ],
+            },
 
-        /*
-        * Download All Campaigns
-        */
-        getItems: function() {
-          this.$.getItems.generateRequest();
-        },
+            observers: [
+                '_campaignsDataChanged(campaigns.*)'
+            ],
 
-
-      _computeCampaigns: function(apiDataChange) {
-        var apiData = apiDataChange.base;
-        if(!apiData) return;
-        return apiData.map(this._parseApiDataItemToCampaign)
-      },
-
+            /*
+             * Download All Campaigns
+             */
+            getItems: function() {
+                this.$.getItems.generateRequest();
+            },
 
 
-      _campaignsDataChanged: function(changeRecord) {
-        var arrayItemIndex = changeRecord.path.split('.');
-        if (!arrayItemIndex[2]) return;
-        var item = this.get('campaigns.' + arrayItemIndex[1]);
+            _computeCampaigns: function(apiDataChange) {
+                var apiData = apiDataChange.base;
+                if (!apiData) return;
+                return apiData.map(this._parseApiDataItemToCampaign)
+            },
 
-        this.fire('campaign-updating', item.id);
-        this.$.updateItem.url = this.apiEndpoint + '/entrepreneurs/'+ this.campaignId +'/campaigntypes/' + item.id;
-        this.$.updateItem.body = JSON.stringify(item);
-        this.$.updateItem.generateRequest();
-      },
+            _getFilterableFieds: function(campaigns) {
+                if(!campaigns[0]) return [];
+                return (Object.keys(campaigns[0]));
+            },
 
-    _getArrayIndexByCampaignId: function(id) {
-      for (var i = 0; i < this.campaigns.length; i++) {
-        if(this.campaigns[i].id === id){
-          return this.campaigns.indexOf(this.campaigns[i]);
-        }
-      }
-    },
+            _getSortableFieds: function(campaigns) {
+                if(!campaigns[0]) return [];
+                var fields = Object.keys(campaigns[0]);
+                return fields.map(function(field) {
+                    return {
+                        name: field,
+                        value: field
+                    };
+                });
+            },
 
-    _updateCampaignByArrayIndex: function(updatedCampaign, arrayIndex) {
-      var updatedCampaign = this._parseApiDataItemToCampaign(updatedCampaign);
-      if (arrayIndex != -1) {
-        return this.splice('campaigns', arrayIndex, 1, updatedCampaign);
-      }
-    },
+            _campaignsDataChanged: function(changeRecord) {
+                var arrayItemIndex = changeRecord.path.split('.');
+                if (!arrayItemIndex[2]) return;
+                var item = this.get('campaigns.' + arrayItemIndex[1]);
 
-    _handleUpdateItemRequest: function(evt) {
-        this._setStatusResponseObject('loading');
-    },
+                this.fire('campaign-updating', item.id);
+                this.$.updateItem.url = this.apiEndpoint + '/entrepreneurs/' + this.campaignId + '/campaigntypes/' + item.id;
+                this.$.updateItem.body = JSON.stringify(item);
+                this.$.updateItem.generateRequest();
+            },
 
-    _handleUpdateItemResponse: function(evt) {
-      var savedItem = evt.detail.response;
-      var toBeUpdatedArrayIndex = this._getArrayIndexByCampaignId(savedItem.id);
-      this._updateCampaignByArrayIndex(savedItem, toBeUpdatedArrayIndex);
-      this.$.updateItem.url = null;
-      this.fire('campaign-type-updated', {
-        response: savedItem
-      });
-      this._setStatusResponseObject('success');
-    },
+            _getArrayIndexByCampaignId: function(id) {
+                for (var i = 0; i < this.campaigns.length; i++) {
+                    if (this.campaigns[i].id === id) {
+                        return this.campaigns.indexOf(this.campaigns[i]);
+                    }
+                }
+            },
 
-    _handleUpdateItemError: function(evt, data) {
-      this.$.updateItem.url = null;
-      this.fire('campaign-type-update-error', {
-        message: evt.detail.error.message,
-        response: evt.detail.response
-      });
-      this._setStatusResponseObject('failed',
-            this.$.updateItem.method,
-            this.$.updateItem.route,
-            'Opslaan mislukt' + ((data.request.xhr.response && data.request.xhr.response.error[0]) ? ': '+data.request.xhr.response.error[0].message : ''));
-    },
+            _updateCampaignByArrayIndex: function(updatedCampaign, arrayIndex) {
+                var updatedCampaign = this._parseApiDataItemToCampaign(updatedCampaign);
+                if (arrayIndex != -1) {
+                    return this.splice('campaigns', arrayIndex, 1, updatedCampaign);
+                }
+            },
 
-    _handleGetItemsRequest: function(evt) {
-        this._setStatusResponseObject('loading',
-              this.$.getItems.method,
-              this.$.getItems.route);
-    },
+            _handleUpdateItemRequest: function(evt) {
+                this._setStatusResponseObject('loading');
+            },
 
-    _handleGetItemsResponse: function(evt) {
-        this._setStatusResponseObject('success',
-              this.$.getItems.method,
-              this.$.getItems.route);
-    },
+            _handleUpdateItemResponse: function(evt) {
+                var savedItem = evt.detail.response;
+                var toBeUpdatedArrayIndex = this._getArrayIndexByCampaignId(savedItem.id);
+                this._updateCampaignByArrayIndex(savedItem, toBeUpdatedArrayIndex);
+                this.$.updateItem.url = null;
+                this.fire('campaign-type-updated', {
+                    response: savedItem
+                });
+                this._setStatusResponseObject('success');
+            },
 
-    _handleGetItemsError: function(evt) {
-        this._setStatusResponseObject('error', this.$.getItems.method. this.$.getItems.route);
-    },
+            _handleUpdateItemError: function(evt, data) {
+                this.$.updateItem.url = null;
+                this.fire('campaign-type-update-error', {
+                    message: evt.detail.error.message,
+                    response: evt.detail.response
+                });
+                this._setStatusResponseObject('failed',
+                    this.$.updateItem.method,
+                    this.$.updateItem.route,
+                    'Opslaan mislukt' + ((data.request.xhr.response && data.request.xhr.response.error[0]) ? ': ' + data.request.xhr.response.error[0].message : ''));
+            },
 
-      _computeRequestHeaders: function(accessToken, limit, direction, searchQuery, orderBy, offset) {
-          var headers = {};
-         if(limit) headers.can_query_limit = limit;
-         if(direction)  headers.can_query_direction = direction;
-         if(searchQuery)  headers.can_query_searchQuery = searchQuery;
-         if(orderBy)  headers.can_query_orderBy = orderBy;
-         if(offset)  headers.can_query_offset = offset;
-         if(accessToken)  headers.authorization = "Bearer " + accessToken;
-          return headers;
-      },
+            _handleGetItemsRequest: function(evt) {
+                this._setStatusResponseObject('loading',
+                    this.$.getItems.method,
+                    this.$.getItems.route);
+            },
 
-      _getApiValue: function(value) {
-        return value;
-      },
+            _handleGetItemsResponse: function(evt) {
+                this._setStatusResponseObject('success',
+                    this.$.getItems.method,
+                    this.$.getItems.route);
+            },
 
-      _parseApiDataItemToCampaign: function(item) {
-        return {
-            id: item.id,
-            status: item.status,
-            statusName: item.statusName,
-            coverURL: item.coverURL,
-            projectNaam: item.projectNaam,
-            slug: item.slug,
-            introductieTekst: item.introductieTekst,
-            pageURL: item.pageURL,
-            contractTypeID: item.contractTypeID,
-            contractType2ID: item.contractType2ID,
-            contractTypeIds: item.contractTypeIds,
-            contractTypeSortIds: item.contractTypeSortIds,
-            requiredFunding: item.requiredFunding,
-            overtekenen: item.overtekenen,
-            maxFunding: item.maxFunding,
-            progressInEuros: item.progressInEuros,
-            progressPercentage: item.progressPercentage,
-            deadlineDateTime: item.deadlineDateTime,
-            daysLeftBeforeDeadLine: item.daysLeftBeforeDeadLine,
-            categories: item.categories,
-            address: item.address,
-            teaser: item.teaser,
-            thumb: item.thumb,
-            numberOfInvestors: item.numberOfInvestors,
-            homepageSuccessFeature: item.homepageSuccessFeature,
-            homepageSuccessFeatureText: item.homepageSuccessFeatureText
-        };
-      },
+            _handleGetItemsError: function(evt) {
+                this._setStatusResponseObject('error', this.$.getItems.method.this.$.getItems.route);
+            },
 
-      _setStatusResponseObject: function(status, method, route, error) {
-          this.set('responseStatus', {
-              status: status,
-              method: method,
-              route: route,
-              error: error
-          });
-      }
-    });
-  </script>
+            _computeRequestHeaders: function(accessToken, limit, direction, searchQuery, orderBy, page) {
+                var headers = {};
+                if (limit) headers.can_query_limit = limit;
+                if (direction) headers.can_query_direction = direction;
+                if (searchQuery) headers.can_query_searchQuery = searchQuery;
+                if (orderBy) headers.can_query_orderBy = orderBy;
+                if (page) headers.can_query_page = page;
+                if (accessToken) headers.authorization = "Bearer " + accessToken;
+                return headers;
+            },
+
+            _getApiValue: function(value) {
+                return value;
+            },
+
+            _parseApiDataItemToCampaign: function(item) {
+                return {
+                    id: item.id,
+                    projectNaam: item.projectNaam,
+                    accountManagerEmail: item.accountManagerEmail,
+                    slug: item.slug,
+                    progressPercentage: item.slug,
+                    timeProgressPercentage: item.timeProgressPercentage,
+                    fundingPredictionAtDeadlineDateInPercentage: item.fundingPredictionAtDeadlineDateInPercentage,
+                    status: item.status,
+                    progressInEuros: item.progressInEuros,
+                    isFunded: item.isFunded,
+                    campagneTypeId: item.campagneTypeId,
+                    numberOfInvestors: item.numberOfInvestors,
+                    averageInvestment: item.averageInvestment
+                };
+            },
+
+            _setStatusResponseObject: function(status, method, route, error) {
+                this.set('responseStatus', {
+                    status: status,
+                    method: method,
+                    route: route,
+                    error: error
+                });
+            }
+        });
+    </script>
 </dom-module>
